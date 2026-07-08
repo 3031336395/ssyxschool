@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A · 那年夏天</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: linear-gradient(180deg, #fff0f6 0%, #f7e8ff 100%);
+            --text-dark: #7b2cb4;
+            --text-light: #a86fc9;
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --glass-border: rgba(190, 140, 230, 0.25);
+            --accent: #9c4fc7;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --soft-pink: #ffd7e8;
+            --deep-pink: #f5a9c8;
+            --light-lavender: #f0e6ff;
+            --pale-lilac: #e8d9f7;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            background: var(--bg-main);
+            background-attachment: fixed;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        #floatCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .page-container {
+            position: relative;
+            z-index: 2;
+            width: 100vw;
+            height: 100vh;
+        }
+        .page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(40px);
+            transition: all 0.6s var(--ease-out-expo);
+            overflow-y: auto;
+            padding-bottom: 80px;
+            will-change: transform, opacity;
+        }
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 3;
+        }
+        .home-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 24px;
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 900;
+            font-size: clamp(3rem, 8vw, 8rem);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 32px;
+            color: var(--accent);
+            opacity: 0;
+            transform: translateY(40px);
+            animation: heroFadeUp 1.2s var(--ease-out-expo) 0.3s forwards;
+        }
+        .time-tip{
+            font-size:14px;
+            color:#c89fc9;
+            margin:-16px 0 32px;
+            letter-spacing:1px;
+            text-align:center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: heroFadeUp 1s var(--ease-out-expo) 0.5s forwards;
+        }
+        .hero-sub {
+            max-width: 480px;
+            font-size: 1rem;
+            font-weight: 300;
+            line-height: 1.8;
+            color: var(--text-light);
+            letter-spacing: 0.02em;
+            font-family: "ZCOOL KuaiLe", cursive;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: heroFadeUp 1s var(--ease-out-expo) 0.6s forwards;
+        }
+        .btn-group {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 340px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: heroFadeUp 1s var(--ease-out-expo) 0.9s forwards;
+        }
+        @keyframes heroFadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .glass-btn {
+            width: 100%;
+            padding: 22px 28px;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.4s var(--ease-out-expo);
+            cursor: pointer;
+            border: none;
+            will-change: transform;
+        }
+        .glass-btn:hover {
+            background: rgba(230, 200, 250, 0.9);
+            border-color: rgba(170, 110, 220, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(156, 79, 199, 0.18);
+        }
+        .glass-btn:active {
+            transform: scale(0.96);
+        }
+        .gallery-page {
+            padding: 0 16px;
+        }
+        .gallery-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 42px 0 24px;
+            background: linear-gradient(to bottom, rgba(255,230,242,0.95), transparent);
+        }
+        .back-btn {
+            position: absolute;
+            left: 8px;
+            top: 42px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.3s ease;
+            will-change: transform;
+        }
+        .back-btn:hover {
+            background: rgba(230, 200, 250, 0.9);
+        }
+        .gallery-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+        .photo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding-bottom: 40px;
+        }
+        .photo-card {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(190, 140, 230, 0.2);
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(156, 79, 199, 0.12);
+            transition: 0.3s ease;
+            cursor: pointer;
+            will-change: transform;
+            padding-bottom:12px;
+        }
+        .photo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(156, 79, 199, 0.2);
+        }
+        .photo-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: zoom-in;
+        }
+        .giscus {
+            padding:10px 12px;
+            min-height:120px;
+        }
+        /* 图片放大弹窗 */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            will-change: opacity;
+        }
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 80vh;
+            border-radius: 12px;
+            transform: scale(0.9);
+            transition: transform 0.4s var(--ease-out-expo);
+            will-change: transform;
+        }
+        .lightbox.active img {
+            transform: scale(1);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            will-change: transform;
+        }
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+        /* 右下角功能按钮 */
+        .music-btn {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.4s ease;
+            will-change: transform;
+        }
+        .music-btn:hover {
+            background: rgba(230, 200, 250, 0.9);
+            transform: scale(1.06);
+        }
+        .music-icon {
+            font-family: "ZCOOL KuaiLe", cursive;
+            font-size: 22px;
+            color: var(--accent);
+        }
+        .like-btn {
+            position: fixed;
+            right: 32px;
+            bottom: 110px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.4s ease;
+            will-change: transform;
+        }
+        .like-btn:hover {
+            background: rgba(230, 200, 250, 0.9);
+            transform: scale(1.06);
+        }
+        .like-btn.liked .like-icon {
+            color: #ff6b9d;
+        }
+        .like-icon {
+            font-size: 24px;
+            color: var(--accent);
+            transition: color 0.3s ease;
+        }
+        .like-num {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        /* 左下角访问统计 */
+        .visit-box {
+            position: fixed;
+            left: 20px;
+            bottom: 30px;
+            padding: 10px 16px;
+            border-radius: 99px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100;
+            color: var(--accent);
+            font-size: 14px;
+        }
+        /* 后台弹窗 */
+        .admin-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            will-change: opacity;
+        }
+        .admin-modal.show {
+            display: flex;
+        }
+        .admin-box {
+            width: min(320px,85%);
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .admin-item {
+            margin: 12px 0;
+        }
+        .admin-item label {
+            display: block;
+            color: #7b2cb4;
+            margin-bottom: 4px;
+            font-size:14px;
+        }
+        .admin-item input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline:none;
+            color:#7b2cb4;
+        }
+        .admin-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .admin-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        .save-btn {
+            background: #9c4fc7;
+            color: white;
+        }
+        .close-btn {
+            background: #eee;
+            color: #333;
+        }
+        .tip-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: clamp(2.5rem, 10vw, 4rem);
+            }
+            .btn-group {
+                max-width: 300px;
+            }
+            .glass-btn {
+                padding: 20px 24px;
+            }
+            .music-btn {
+                right: 20px;
+                bottom: 20px;
+                width: 56px;
+                height: 56px;
+            }
+            .like-btn {
+                right: 20px;
+                bottom: 98px;
+                width: 56px;
+            }
+            .photo-list {
+                gap: 14px;
+            }
+            .gallery-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="floatCanvas"></canvas>
+    <div class="page-container">
+        <div class="page home-page active" id="page-home">
+            <h1 class="hero-title">
+                A · 那年夏天
+            </h1>
+            <div class="time-tip" id="timeText"></div>
+            <p class="hero-sub">
+                珍藏夏日限定回忆，记录每一段温柔瞬间
+            </p>
+            <div class="btn-group">
+                <button class="glass-btn" data-target="page-work">夏日相册</button>
+                <button class="glass-btn" data-target="page-about">关于回忆</button>
+                <button class="glass-btn" data-target="page-concept">概念影像</button>
+            </div>
+        </div>
+
+        <!-- 相册1 1~15 -->
+        <div class="page gallery-page" id="page-work">
+            <div class="gallery-header">
+                <button class="back-btn" data-target="page-home">← 返回</button>
+                <h2 class="gallery-title">A · 那年夏天</h2>
+            </div>
+            <div class="photo-list">
+                <div class="photo-card" data-id="1">
+                    <img src="./img/1.jpg" alt="夏日照片1">
+                    <div class="giscus" data-pathname="/img/1.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="2">
+                    <img src="./img/2.jpg" alt="夏日照片2">
+                    <div class="giscus" data-pathname="/img/2.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="3">
+                    <img src="./img/3.jpg" alt="夏日照片3">
+                    <div class="giscus" data-pathname="/img/3.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="4">
+                    <img src="./img/4.jpg" alt="夏日照片4">
+                    <div class="giscus" data-pathname="/img/4.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="5">
+                    <img src="./img/5.jpg" alt="夏日照片5">
+                    <div class="giscus" data-pathname="/img/5.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="6">
+                    <img src="./img/6.jpg" alt="夏日照片6">
+                    <div class="giscus" data-pathname="/img/6.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="7">
+                    <img src="./img/7.jpg" alt="夏日照片7">
+                    <div class="giscus" data-pathname="/img/7.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="8">
+                    <img src="./img/8.jpg" alt="夏日照片8">
+                    <div class="giscus" data-pathname="/img/8.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="9">
+                    <img src="./img/9.jpg" alt="夏日照片9">
+                    <div class="giscus" data-pathname="/img/9.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="10">
+                    <img src="./img/10.jpg" alt="夏日照片10">
+                    <div class="giscus" data-pathname="/img/10.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="11">
+                    <img src="./img/11.jpg" alt="夏日照片11">
+                    <div class="giscus" data-pathname="/img/11.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="12">
+                    <img src="./img/12.jpg" alt="夏日照片12">
+                    <div class="giscus" data-pathname="/img/12.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="13">
+                    <img src="./img/13.jpg" alt="夏日照片13">
+                    <div class="giscus" data-pathname="/img/13.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="14">
+                    <img src="./img/14.jpg" alt="夏日照片14">
+                    <div class="giscus" data-pathname="/img/14.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="15">
+                    <img src="./img/15.jpg" alt="夏日照片15">
+                    <div class="giscus" data-pathname="/img/15.jpg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 相册2 16~30 -->
+        <div class="page gallery-page" id="page-about">
+            <div class="gallery-header">
+                <button class="back-btn" data-target="page-home">← 返回</button>
+                <h2 class="gallery-title">关于回忆</h2>
+            </div>
+            <div class="photo-list">
+                <div class="photo-card" data-id="16">
+                    <img src="./img/16.jpg" alt="回忆照片1">
+                    <div class="giscus" data-pathname="/img/16.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="17">
+                    <img src="./img/17.jpg" alt="回忆照片2">
+                    <div class="giscus" data-pathname="/img/17.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="18">
+                    <img src="./img/18.jpg" alt="回忆照片3">
+                    <div class="giscus" data-pathname="/img/18.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="19">
+                    <img src="./img/19.jpg" alt="回忆照片4">
+                    <div class="giscus" data-pathname="/img/19.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="20">
+                    <img src="./img/20.jpg" alt="回忆照片5">
+                    <div class="giscus" data-pathname="/img/20.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="21">
+                    <img src="./img/21.jpg" alt="回忆照片6">
+                    <div class="giscus" data-pathname="/img/21.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="22">
+                    <img src="./img/22.jpg" alt="回忆照片7">
+                    <div class="giscus" data-pathname="/img/22.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="23">
+                    <img src="./img/23.jpg" alt="回忆照片8">
+                    <div class="giscus" data-pathname="/img/23.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="24">
+                    <img src="./img/24.jpg" alt="回忆照片9">
+                    <div class="giscus" data-pathname="/img/24.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="25">
+                    <img src="./img/25.jpg" alt="回忆照片10">
+                    <div class="giscus" data-pathname="/img/25.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="26">
+                    <img src="./img/26.jpg" alt="回忆照片11">
+                    <div class="giscus" data-pathname="/img/26.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="27">
+                    <img src="./img/27.jpg" alt="回忆照片12">
+                    <div class="giscus" data-pathname="/img/27.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="28">
+                    <img src="./img/28.jpg" alt="回忆照片13">
+                    <div class="giscus" data-pathname="/img/28.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="29">
+                    <img src="./img/29.jpg" alt="回忆照片14">
+                    <div class="giscus" data-pathname="/img/29.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="30">
+                    <img src="./img/30.jpg" alt="回忆照片15">
+                    <div class="giscus" data-pathname="/img/30.jpg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 相册3 31~45 -->
+        <div class="page gallery-page" id="page-concept">
+            <div class="gallery-header">
+                <button class="back-btn" data-target="page-home">← 返回</button>
+                <h2 class="gallery-title">概念影像</h2>
+            </div>
+            <div class="photo-list">
+                <div class="photo-card" data-id="31">
+                    <img src="./img/31.jpg" alt="概念照片1">
+                    <div class="giscus" data-pathname="/img/31.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="32">
+                    <img src="./img/32.jpg" alt="概念照片2">
+                    <div class="giscus" data-pathname="/img/32.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="33">
+                    <img src="./img/33.jpg" alt="概念照片3">
+                    <div class="giscus" data-pathname="/img/33.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="34">
+                    <img src="./img/34.jpg" alt="概念照片4">
+                    <div class="giscus" data-pathname="/img/34.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="35">
+                    <img src="./img/35.jpg" alt="概念照片5">
+                    <div class="giscus" data-pathname="/img/35.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="36">
+                    <img src="./img/36.jpg" alt="概念照片6">
+                    <div class="giscus" data-pathname="/img/36.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="37">
+                    <img src="./img/37.jpg" alt="概念照片7">
+                    <div class="giscus" data-pathname="/img/37.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="38">
+                    <img src="./img/38.jpg" alt="概念照片8">
+                    <div class="giscus" data-pathname="/img/38.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="39">
+                    <img src="./img/39.jpg" alt="概念照片9">
+                    <div class="giscus" data-pathname="/img/39.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="40">
+                    <img src="./img/40.jpg" alt="概念照片10">
+                    <div class="giscus" data-pathname="/img/40.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="41">
+                    <img src="./img/41.jpg" alt="概念照片11">
+                    <div class="giscus" data-pathname="/img/41.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="42">
+                    <img src="./img/42.jpg" alt="概念照片12">
+                    <div class="giscus" data-pathname="/img/42.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="43">
+                    <img src="./img/43.jpg" alt="概念照片13">
+                    <div class="giscus" data-pathname="/img/43.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="44">
+                    <img src="./img/44.jpg" alt="概念照片14">
+                    <div class="giscus" data-pathname="/img/44.jpg"></div>
+                </div>
+                <div class="photo-card" data-id="45">
+                    <img src="./img/45.jpg" alt="概念照片15">
+                    <div class="giscus" data-pathname="/img/45.jpg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 图片放大弹窗 -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-close" id="lightboxClose">×</div>
+        <img id="lightboxImg" src="" alt="放大图片">
+    </div>
+    <div class="visit-box">访问人数：<span id="visitNum">0</span></div>
+    <div class="like-btn" id="likeBtn">
+        <span class="like-icon">♡</span>
+        <span class="like-num" id="likeCount">0</span>
+    </div>
+    <div class="music-btn" id="musicToggle">
+        <span class="music-icon">音</span>
+    </div>
+    <audio id="bgMusic" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-box">
+            <div class="admin-item">
+                <label>管理密码</label>
+                <input type="password" id="adminPwdInput" placeholder="输入密码进入编辑">
+            </div>
+            <div class="admin-item admin-edit" style="display:none" id="editVisitWrap">
+                <label>访问人数</label>
+                <input type="number" id="editVisit">
+            </div>
+            <div class="admin-item admin-edit" style="display:none" id="editLikeWrap">
+                <label>点赞总数</label>
+                <input type="number" id="editLike">
+            </div>
+            <div class="admin-btn-group">
+                <button class="admin-btn save-btn" id="saveAdminBtn">保存修改</button>
+                <button class="admin-btn close-btn" id="closeAdminBtn">关闭</button>
+            </div>
+            <p class="tip-text">连续点击右下角音乐按钮5次呼出后台，密码123456</p>
+        </div>
+    </div>
+    <!-- 你生成的Giscus评论脚本 -->
+    <script src="https://giscus.app/client.js"
+        data-repo="3031336395/ssyxschool"
+        data-repo-id="R_kgDOTQneHA"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOTQneHM4DAvR3"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="catppuccin_latte"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+    </script>
+<script>
+// 实时时间
+const timeText = document.getElementById('timeText');
+const weekArr = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+function updateTime(){
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,'0');
+    const d = String(now.getDate()).padStart(2,'0');
+    const w = weekArr[now.getDay()];
+    const h = String(now.getHours()).padStart(2,'0');
+    const min = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    timeText.textContent = `现在是${y}年${m}月${d} ${w} ${h}:${min}:${s}`;
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// 页面切换
+const allPages = document.querySelectorAll('.page');
+const switchBtns = document.querySelectorAll('[data-target]');
+function switchPage(pageId) {
+    allPages.forEach(p=>p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+}
+switchBtns.forEach(btn=>btn.addEventListener('click', ()=>switchPage(btn.dataset.target)));
+
+// 图片放大
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxClose = document.getElementById('lightboxClose');
+const allPhotos = document.querySelectorAll('.photo-card img');
+function openLightbox(src){
+    lightboxImg.src = src;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+}
+allPhotos.forEach(img=>img.addEventListener('click', (e)=>{e.stopPropagation();openLightbox(img.src);}));
+lightboxClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e)=>{if(e.target === lightbox) closeLightbox();});
+document.addEventListener('keydown', (e)=>{if(e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();});
+
+// 背景音乐
+const audio = document.getElementById('bgMusic');
+const musicBtn = document.getElementById('musicToggle');
+const musicIcon = musicBtn.querySelector('.music-icon');
+let audioUnlocked = false;
+let audioPlaying = false;
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    audio.play().then(()=>{audioPlaying=true;musicIcon.textContent='停';}).catch(e=>{});
+}
+document.body.addEventListener('click', unlockAudio);
+document.body.addEventListener('touchstart', unlockAudio);
+musicBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    unlockAudio();
+    if(audioPlaying){audio.pause();audioPlaying=false;musicIcon.textContent='音';}
+    else {audio.play();audioPlaying=true;musicIcon.textContent='停';}
+});
+
+// 访问人数
+const visitNumDom = document.getElementById('visitNum');
+let visitTotal = Number(localStorage.getItem('visitTotal')) || 1314;
+let hasVisited = localStorage.getItem('hasVisitedOnce') === 'true';
+function initVisitCount(){
+    if(!hasVisited){
+        visitTotal++;
+        localStorage.setItem('visitTotal',visitTotal);
+        localStorage.setItem('hasVisitedOnce','true');
+    }
+    visitNumDom.textContent = visitTotal;
+}
+initVisitCount();
+
+// 点赞
+const likeBtn = document.getElementById('likeBtn');
+const likeIcon = likeBtn.querySelector('.like-icon');
+const likeCountDom = document.getElementById('likeCount');
+let totalLike = Number(localStorage.getItem('likeTotal')) || 28;
+let userLiked = localStorage.getItem('userLiked') === 'true';
+function initLike(){
+    likeCountDom.textContent = totalLike;
+    if(userLiked){likeBtn.classList.add('liked');likeIcon.textContent='♥';}
+    else {likeBtn.classList.remove('liked');likeIcon.textContent='♡';}
+}
+initLike();
+likeBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(userLiked){totalLike--;userLiked=false;localStorage.setItem('userLiked','false');}
+    else {totalLike++;userLiked=true;localStorage.setItem('userLiked','true');}
+    localStorage.setItem('likeTotal',totalLike);
+    initLike();
+});
+
+// 后台弹窗
+const adminModal = document.getElementById('adminModal');
+const adminPwdInput = document.getElementById('adminPwdInput');
+const editVisitWrap = document.getElementById('editVisitWrap');
+const editLikeWrap = document.getElementById('editLikeWrap');
+const editVisit = document.getElementById('editVisit');
+const editLike = document.getElementById('editLike');
+const saveAdminBtn = document.getElementById('saveAdminBtn');
+const closeAdminBtn = document.getElementById('closeAdminBtn');
+const adminPassword = "123456";
+let musicClickCount = 0;
+musicBtn.addEventListener('click', ()=>{
+    musicClickCount++;
+    setTimeout(()=>{musicClickCount=0;},1200);
+    if(musicClickCount >=5){
+        adminModal.classList.add('show');
+    }
+});
+closeAdminBtn.addEventListener('click', ()=>{
+    adminModal.classList.remove('show');
+    adminPwdInput.value = '';
+    editVisitWrap.style.display = 'none';
+    editLikeWrap.style.display = 'none';
+});
+adminPwdInput.addEventListener('input', ()=>{
+    if(adminPwdInput.value === adminPassword){
+        editVisitWrap.style.display = 'block';
+        editLikeWrap.style.display = 'block';
+        editVisit.value = visitTotal;
+        editLike.value = totalLike;
+    }else{
+        editVisitWrap.style.display = 'none';
+        editLikeWrap.style.display = 'none';
+    }
+});
+saveAdminBtn.addEventListener('click', ()=>{
+    const newV = Number(editVisit.value);
+    const newL = Number(editLike.value);
+    if(!newV || !newL){alert('数字不能为空');return;}
+    visitTotal = newV;
+    totalLike = newL;
+    localStorage.setItem('visitTotal',newV);
+    localStorage.setItem('likeTotal',newL);
+    initVisitCount();
+    initLike();
+    alert('修改成功！');
+    closeAdminBtn.click();
+});
+
+// 漂浮动画（无黄色、修复拖影）
+const canvas = document.getElementById('floatCanvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+let w,h,floats=[],tinyStars=[];
+function resizeCanvas(){
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w;
+    canvas.height = h;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class TinyStar{
+    constructor(){
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.r = Math.random()*1.4+0.4;
+        this.twinkle = Math.random()*Math.PI*2;
+        this.opacity = Math.random()*0.5+0.3;
+    }
+    update(){this.twinkle += 0.005;}
+    draw(){
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255, ${this.opacity*(0.6+Math.sin(this.twinkle)*0.4)})`;
+        ctx.fill();
+    }
+}
+class FloatItem{
+    constructor(){
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.size = Math.random()*24+16;
+        this.speedX = (Math.random()-0.5)*0.01;
+        this.speedY = (Math.random()-0.5)*0.01;
+        this.wave = Math.random()*Math.PI*2;
+        this.type = ['pencil','star','heart','moon'][Math.floor(Math.random()*4)];
+        this.opacity = Math.random()*0.55+0.35;
+    }
+    update(){
+        this.wave += 0.0008;
+        this.x += this.speedX + Math.sin(this.wave)*0.35;
+        this.y += this.speedY + Math.cos(this.wave)*0.35;
+        if(this.x < -30) this.x = w+30;
+        if(this.x > w+30) this.x = -30;
+        if(this.y < -30) this.y = h+30;
+        if(this.y > h+30) this.y = -30;
+    }
+    draw(){
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        ctx.globalAlpha = this.opacity;
+        const s = this.size;
+        if(this.type === 'pencil'){
+            ctx.fillStyle='#ffd7e8';
+            ctx.fillRect(-s*0.12,-s*0.45,s*0.24,s*0.9);
+            ctx.fillStyle='#f5a9c8';
+            ctx.beginPath();
+            ctx.moveTo(-s*0.12,s*0.45);
+            ctx.lineTo(0,s*0.55);
+            ctx.lineTo(s*0.12,s*0.45);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle='#fff';
+            ctx.fillRect(-s*0.12,-s*0.45,s*0.24,s*0.18);
+        }else if(this.type === 'star'){
+            ctx.fillStyle='#ffd7e8';
+            ctx.beginPath();
+            for(let i=0;i<5;i++){
+                const a = (i*4*Math.PI)/5 - Math.PI/2;
+                const x = Math.cos(a)*s*0.45;
+                const y = Math.sin(a)*s*0.45;
+                i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }else if(this.type === 'heart'){
+            ctx.fillStyle='#ffd7e8';
+            ctx.beginPath();
+            ctx.moveTo(0,s*0.15);
+            ctx.bezierCurveTo(-s*0.25,-s*0.15,-s*0.45,s*0.05,0,s*0.35);
+            ctx.bezierCurveTo(s*0.45,s*0.05,s*0.25,-s*0.15,0,s*0.15);
+            ctx.fill();
+        }else if(this.type === 'moon'){
+            ctx.fillStyle='#fff0f6';
+            ctx.beginPath();
+            ctx.arc(0,0,s*0.45,0,Math.PI*2);
+            ctx.fill();
+            ctx.globalAlpha=0.6;
+            ctx.beginPath();
+            ctx.arc(s*0.15,-s*0.35,s*0.35,0,Math.PI*2);
+            ctx.fillStyle='#f7e8ff';
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+function initScene(){
+    tinyStars = [];
+    floats = [];
+    const starCount = Math.floor((w*h)/800);
+    for(let i=0;i<starCount;i++) tinyStars.push(new TinyStar());
+    const floatCount = Math.floor((w*h)/4500);
+    for(let i=0;i<floatCount;i++) floats.push(new FloatItem());
+}
+initScene();
+function animate(){
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(-100, -100, w + 200, h + 200);
+    tinyStars.forEach(st=>{st.update();st.draw();});
+    floats.forEach(it=>{it.update();it.draw();});
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
